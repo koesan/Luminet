@@ -1,7 +1,7 @@
 # Luminet — Lightweight Recon Dashboard / Luminet — Hafif Keşif Panosu
 
 
-[![Luminet Demo]](video/video.mp4)
+[!Luminet Demo](video/video.mp4)
 
 
 
