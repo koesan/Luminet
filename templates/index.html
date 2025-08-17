@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkcell Global IP Analiz Sistemi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        :root {
+            --primary-navy: #1e3a8a;
+            --secondary-navy: #1e40af;
+            --accent-yellow: #fbbf24;
+            --accent-yellow-dark: #f59e0b;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --border-light: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #e0e7ff 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+            box-shadow: 0 4px 20px rgba(30, 58, 138, 0.15);
+            padding: 1rem 0;
+        }
+        style.textContent = `
+        .traceroute-hop-marker {
+            background-color: #3388ff;
+            border: 2px solid white;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .traceroute-start-marker {
+            color: #28a745;
+            font-size: 24px;
+        }
+        .traceroute-end-marker {
+            color: #dc3545;
+            font-size: 24px;
+        }
+        .hop-popup {
+            max-width: 300px;
+        }
+        .hop-popup table {
+            margin-bottom: 0;
+        }
+        .hop-popup th {
+            white-space: nowrap;
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: absolute;
+            text-align: left;
+            padding: 10px;
+            font: 12px sans-serif;
+            background: rgba(255, 255, 255, 0.97);
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            pointer-events: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 450px;       /* Genişliğin çok artmasını önle */
+            word-wrap: break-word;  /* Uzun metinleri alt satıra indir */
+            line-height: 1.5;
+            z-index: 1000; /* Diğer elementlerin üzerinde görünmesini sağlar */
+        }
+        .tooltip h6 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--primary-navy);
+            font-weight: 600;
+        }
+        .tooltip p {
+            margin-bottom: 5px;
+        }
+        .tooltip code {
+            background-color: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.875em;
+            color: #c7254e;
+        }
+        .tooltip hr {
+            margin: 4px 0;
+            border-top: 1px solid #ddd;
+        }
+        /* Ok İşaretçisi Stilleri */
+        .arrowhead {
+            fill: #999;
+        }
+
+        .page-wrapper {
+            flex: 1;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--white) !important;
+        }
+
+        .navbar-brand i {
+            color: var(--accent-yellow);
+            margin-right: 0.5rem;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+            color: var(--white);
+            padding: 2rem 0 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--white), var(--accent-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        /* style.css veya projenizin ana CSS dosyasına ekleyin */
+        .bgp-graph-container {
+            width: 100%; /* Üst öğesinin genişliğini doldur */
+            min-height: 500px; /* Görselleştirme için yeterli yükseklik */
+            height: auto; /* İçeriğe göre yüksekliği ayarlayabilir */
+            border: 1px solid #ddd; /* Grafiğin sınırlarını görmek için geçici kenarlık */
+            box-sizing: border-box; /* Padding ve border'ı genişliğe dahil et */
+            overflow: hidden; /* Taşmaları gizle */
+        }
+
+        /* Tooltip stilinizi de buraya ekleyebilirsiniz, bootstrap card sınıflarını kullandığınız için muhtemelen tamamdır */
+        .tooltip.card {
+            position: absolute;
+            padding: .5rem .75rem;
+            font-size: .875rem;
+            color: #333;
+            background-color: #fff;
+            border: 1px solid rgba(0,0,0,.125);
+            border-radius: .25rem;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+            pointer-events: none; /* Tooltip'in fare olaylarını engellemesini önler */
+            z-index: 1070; /* Diğer elementlerin üzerinde görünmesini sağlar */
+        }
+
+        .tooltip.card h6 {
+            margin-bottom: .5rem;
+            font-size: 1rem;
+            color: #0d6efd; /* Bootstrap primary blue */
+        }
+
+        .tooltip.card p {
+            margin-bottom: .25rem;
+        }
+        .tooltip {
+            /* ... mevcut stiller ... */
+            max-width: 450px;       /* Genişliğin çok artmasını önle */
+            word-wrap: break-word;  /* Uzun metinleri alt satıra indir */
+            text-align: left;       /* İçeriği sola hizala */
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.97); /* Biraz daha az saydam */
+        }
+        /* Tooltip içindeki kod blokları için stil */
+        .tooltip code {
+            background-color: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.875em;
+            color: #c7254e;
+        }
+        .tooltip hr {
+            margin: 4px 0;
+            border-top: 1px solid #ddd;
+}
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .search-container {
+            background: var(--white);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(30, 58, 138, 0.1);
+            margin-top: 5rem;
+        }
+
+        .search-input {
+            border: 2px solid var(--border-light);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 0 0.2rem rgba(251, 191, 36, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(251, 191, 36, 0.3);
+            color: var(--text-dark);
+        }
+
+        .main-container {
+            padding: 3rem 0;
+            margin-bottom: 100px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+            color: var(--white);
+            border-radius: 20px 20px 0 0 !important;
+            padding: 1.5rem;
+            border: none;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .stats-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--white) 0%, #f8fafc 100%);
+            border: 2px solid var(--border-light);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .map-container {
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+            color: var(--white);
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(251, 191, 36, 0.1);
+        }
+
+        .badge {
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: var(--white);
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, var(--accent-yellow), var(--accent-yellow-dark));
+            color: var(--text-dark);
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: var(--white);
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: var(--white);
+        }
+
+        .accordion-item {
+            border: none;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .accordion-button {
+            background: linear-gradient(135deg, var(--white) 0%, #f8fafc 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
+            color: var(--text-dark);
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(251, 191, 36, 0.25);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            color: #dc2626;
+            border-left: 4px solid #dc2626;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            color: #d97706;
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: #059669;
+            border-left: 4px solid #10b981;
+        }
+
+        .ping-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .ping-stat {
+            padding: 1rem;
+            border-radius: 15px;
+            background: linear-gradient(135deg, var(--white) 0%, #f8fafc 100%);
+            border: 2px solid var(--border-light);
+        }
+
+        .ping-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+        }
+
+        .ping-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .contact-card {
+            background: linear-gradient(135deg, var(--white) 0%, #f8fafc 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-yellow);
+            transition: all 0.3s ease;
+        }
+
+        .contact-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-type {
+            font-weight: 600;
+            color: var(--primary-navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-org {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-name {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-email {
+            color: var(--accent-yellow-dark);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-email:hover {
+            color: var(--accent-yellow);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+            color: var(--white);
+            padding: 1.5rem 0;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .http-headers-container {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 2px solid var(--border-light);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .header-row {
+            display: flex;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: var(--white);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-yellow);
+            transition: all 0.3s ease;
+        }
+
+        .header-row:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-key {
+            font-weight: 600;
+            color: var(--primary-navy);
+            min-width: 200px;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .header-value {
+            color: var(--text-dark);
+            flex: 1;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .redirect-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--white);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .redirect-number {
+            font-weight: 600;
+            color: var(--primary-navy);
+            margin-right: 0.5rem;
+            min-width: 30px;
+        }
+
+        .redirect-url {
+            flex: 1;
+            color: var(--text-dark);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .security-issue {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .security-issue-success {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+        }
+
+        .security-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .security-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .search-container {
+                padding: 1.5rem;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .ping-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .security-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .security-icon {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+        }
+        .hero-section {
+            min-height: 38vh; /* İstersen yüksekliği artırabilirsin */
+            position: relative;
+        }
+
+        .logo-top-left img {
+            height: 200px; /* Daha büyük logo */
+        }
+
+        .logo-top-left span {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--white) !important;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- ================= GÜNCELLENMİŞ NAVİGASYON ÇUBUĞU ================= -->
+    <!-- 'fixed-top' class'ı kaldırıldı, böylece içeriğin üstünü kapatmıyor -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_authenticated %}
+                        <!-- Giriş Yapmış Kullanıcı İçin Açılır Menü -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i> {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="bi bi-person-fill me-2"></i>Profilim</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <!-- Giriş Yapmamış Kullanıcı İçin Linkler -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Giriş</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-sm ms-2">Kayıt Ol</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- ================= NAVİGASYON ÇUBUĞU BİTİŞİ ================= -->
+
+    <!-- Orijinal hero-section kodunuz (artık üstü kapanmıyor) -->
+    <section class="hero-section position-relative">
+        <div class="container hero-content position-relative">
+
+            <!-- Logo ve yazı sol üstte -->
+            <div class="logo-top-left d-flex align-items-center position-absolute" style="top: 20px; left: -250px;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" height="50" class="me-3">
+            </div>
+
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="hero-title">Global IP Sorgulama Sistemi</h1>
+                    
+                    <div class="search-container">
+                        <form method="POST" action="/">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="bi bi-search text-primary"></i>
+                                </span>
+                                <input type="text" class="form-control search-input border-start-0" 
+                                       name="query" placeholder="IP adresi veya alan adı girin (örn: 8.8.8.8, google.com)" 
+                                       value="{{ query or '' }}" required>
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-search me-2"></i>Analiz Et
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if error %}
+    <div class="container mt-4">
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if data %}
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="container">
+            <!-- Results Header -->
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                    <h2 class="section-title mb-0">
+                        <i class="bi bi-graph-up text-warning me-2"></i>
+                        Analiz Sonuçları: {{ query }}
+                    </h2>
+                </div>
+                <div class="col-md-4 text-end">
+                    {% if data.source_rir != 'Bilinmiyor' %}
+                    <span class="badge badge-success fs-6">
+                        <i class="bi bi-shield-check me-1"></i>Kaynak: {{ data.source_rir }}
+                    </span>
+                    {% endif %}
+                    <span class="badge badge-info fs-6 ms-2">
+                        <i class="bi bi-diagram-3 me-1"></i>IP Sınıfı: {{ data.summary.ip_class }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Main Analysis Cards -->
+            {% if bgpview_prefix or peeringdb_data %}
+            <div class="row g-4 mb-5">
+                <div class="col-12">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-diagram-3-fill me-2"></i>
+                                Gelişmiş Ağ ve Yönlendirme Bilgileri
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- BGPView Prefix Detayları -->
+                                {% if bgpview_prefix %}
+                                <div class="col-lg-6">
+                                    <h6 class="text-primary fw-semibold border-bottom pb-2 mb-3">
+                                        <i class="bi bi-signpost-split-fill me-2"></i>Ağ Prefix Bilgileri (BGPView)
+                                    </h6>
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Prefix</dt>
+                                        <dd class="col-sm-8">{{ bgpview_prefix.prefix }}</dd>
+
+                                        <dt class="col-sm-4">Prefix Adı</dt>
+                                        <dd class="col-sm-8">{{ bgpview_prefix.name }}</dd>
+
+                                        <dt class="col-sm-4">Açıklama</dt>
+                                        <dd class="col-sm-8">{{ bgpview_prefix.description }}</dd>
+                                    </dl>
+                                </div>
+                                {% endif %}
+
+                                <!-- PeeringDB ASN Detayları -->
+                                {% if peeringdb_data %}
+                                <div class="col-lg-6">
+                                    <h6 class="text-primary fw-semibold border-bottom pb-2 mb-3">
+                                       <i class="bi bi-building-fill-gear me-2"></i> Servis Sağlayıcı Detayları (PeeringDB)
+                                    </h6>
+                                    <dl class="row">
+                                         <dt class="col-sm-5">Kuruluş (ASN)</dt>
+                                         <dd class="col-sm-7">{{ peeringdb_data.name }} (AS{{ origin_asn }})</dd>
+                                         
+                                         <dt class="col-sm-5">Web Sitesi</dt>
+                                         <dd class="col-sm-7">
+                                             {% if peeringdb_data.website %}
+                                             <a href="{{ peeringdb_data.website }}" target="_blank">{{ peeringdb_data.website }}</a>
+                                             {% else %}
+                                             Bilinmiyor
+                                             {% endif %}
+                                         </dd>
+
+                                         <dt class="col-sm-5">Trafik Türü</dt>
+                                         <dd class="col-sm-7">{{ peeringdb_data.traffic_type }}</dd>
+
+                                         <dt class="col-sm-5">Anons Edilen IPv4/v6</dt>
+                                         <dd class="col-sm-7">{{ peeringdb_data.prefix_count_ipv4 }} / {{ peeringdb_data.prefix_count_ipv6 }}</dd>
+
+                                         <dt class="col-sm-5">Peering Politikası</dt>
+                                         <dd class="col-sm-7">{{ peeringdb_data.policy }}</dd>
+                                    </dl>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="row g-4 mb-5">
+                <!-- ================== GÜNCELLENMİŞ VE DETAYLANDIRILMIŞ AĞ ÖZETİ KARTI ================== -->
+                <div class="col-lg-7">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                Ağ Özeti (RDAP)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl>
+                                        <dt class="text-primary fw-semibold">Ağ Adı</dt>
+                                        <dd class="mb-3">{{ data.summary.name }}</dd>
+
+                                        <dt class="text-primary fw-semibold">Handle</dt>
+                                        <dd class="mb-3">{{ data.summary.handle }}</dd>
+
+                                        {% if data.summary.ip_range %}
+                                        <dt class="text-primary fw-semibold">IP Aralığı</dt>
+                                        <dd class="mb-3">{{ data.summary.ip_range }}</dd>
+                                        {% endif %}
+
+                                        {% if data.summary.asn_range %}
+                                        <dt class="text-primary fw-semibold">ASN Aralığı</dt>
+                                        <dd class="mb-3">{{ data.summary.asn_range }}</dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl>
+                                        <!-- YENİ: Kaydı yapan kuruluşu bulmak için mantık eklendi -->
+                                        {% set org_contact = (data.contacts.registrant or data.contacts.administrative or data.contacts.technical)|first %}
+                                        {% if org_contact and org_contact.org != 'Bilinmiyor' %}
+                                        <dt class="text-primary fw-semibold">Kaydı Yapan Kuruluş</dt>
+                                        <dd class="mb-3">{{ org_contact.org }}</dd>
+                                        {% endif %}
+
+                                        <dt class="text-primary fw-semibold">Ülke</dt>
+                                        <dd class="mb-3">
+                                            {{ data.summary.country }}
+                                            {% if ipinfo_data and ipinfo_data.country_name %}
+                                            <small class="text-muted">({{ ipinfo_data.country_name }})</small>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="text-primary fw-semibold">Kayıt Tipi</dt>
+                                        <dd class="mb-3">{{ data.summary.type }}</dd>
+
+                                        <dt class="text-primary fw-semibold">IP Sınıfı</dt>
+                                        <dd class="mb-3">
+                                            <span class="badge badge-info">{{ data.summary.ip_class }}</span>
+                                            <small class="text-muted">{{ data.summary.ip_class_desc }}</small>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <!-- YENİ: Önemli Tarihler (Events) bölümü eklendi -->
+                            {% if data.details and data.details.events %}
+                            <hr>
+                            <h6 class="text-primary fw-semibold mb-2">Önemli Tarihler</h6>
+                            <div class="row small">
+                                {% for event in data.details.events %}
+                                <div class="col-md-6 mb-2">
+                                    <i class="bi bi-calendar-event text-muted me-1"></i>
+                                    <strong>{{ event.eventAction | replace('_', ' ') | title }}:</strong>
+                                    <span>{{ event.eventDate.split('T')[0] }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- YENİ: Kayıt Notları (Remarks) bölümü eklendi -->
+                            {% if data.details and data.details.remarks %}
+                            <hr>
+                            <h6 class="text-primary fw-semibold mb-2">Kayıt Notları</h6>
+                            {% for remark in data.details.remarks %}
+                                <div class="alert alert-secondary p-2 small mt-2">
+                                    {% if remark.title %}<p class="fw-bold mb-1">{{ remark.title }}</p>{% endif %}
+                                    <div class="text-muted">
+                                    {% for desc in remark.description %}
+                                        <p class="mb-1">{{ desc }}</p>
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- ================== KART BİTİŞİ ================== -->
+
+                <!-- Contact Information -->
+                <div class="col-lg-5">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-people-fill me-2"></i>
+                                İletişim Bilgileri
+                            </h5>
+                        </div>
+                        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                            {% set has_contacts = false %}
+                            {% for type, contacts in data.contacts.items() %}
+                                {% for contact in contacts %}
+                                    {% set has_contacts = true %}
+                                    <div class="contact-card">
+                                        <div class="contact-type">{{ type|title }}</div>
+                                        <div class="contact-org">{{ contact.org }}</div>
+                                        <div class="contact-name">{{ contact.name }}</div>
+                                        {% if contact.email != 'Bilinmiyor' %}
+                                        <a href="mailto:{{ contact.email }}" class="contact-email">
+                                            <i class="bi bi-envelope me-1"></i>{{ contact.email }}
+                                        </a>
+                                        {% endif %}
+                                        {% if contact.tel != 'Bilinmiyor' %}
+                                        <div class="mt-2">
+                                            <i class="bi bi-telephone text-muted me-1"></i>
+                                            <small class="text-muted">{{ contact.tel }}</small>
+                                        </div>
+                                        {% endif %}
+                                        {% if contact.address != 'Bilinmiyor' %}
+                                        <div class="mt-2">
+                                            <i class="bi bi-geo-alt text-muted me-1"></i>
+                                            <small class="text-muted">{{ contact.address }}</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                            {% if not has_contacts %}
+                            <p class="text-muted text-center">Bu kayıt için rol bazlı kişi bilgisi bulunamadı.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Analysis -->
+            <div class="row g-4 mb-5">
+                <!-- Ping Analysis -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                Ping & Gecikme Analizi
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if ping_data %}
+                                {% if ping_data.error %}
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        {{ ping_data.error }}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted mb-3">Hedefe gönderilen paketlerin gidiş-dönüş süreleri:</p>
+                                    <div class="ping-stats">
+                                        <div class="ping-stat">
+                                            <div class="ping-value">{{ ping_data.min }}</div>
+                                            <div class="ping-label">Minimum</div>
+                                        </div>
+                                        <div class="ping-stat">
+                                            <div class="ping-value text-warning">{{ ping_data.avg }}</div>
+                                            <div class="ping-label">Ortalama</div>
+                                        </div>
+                                        <div class="ping-stat">
+                                            <div class="ping-value">{{ ping_data.max }}</div>
+                                            <div class="ping-label">Maksimum</div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted text-center">Ping verisi alınamadı.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sunucu Bilgileri Kısmı -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-server me-2"></i>
+                                Sunucu Bilgileri
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl>
+                                        <dt class="text-primary fw-semibold">Reverse DNS (PTR)</dt>
+                                        <dd class="mb-3">{{ reverse_dns or 'Bilinmiyor' }}</dd>
+                                        
+                                        <dt class="text-primary fw-semibold">Ping Durumu</dt>
+                                        <dd class="mb-3">
+                                            {% if ping_data and not ping_data.error %}
+                                                <span class="badge badge-success">Başarılı</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Başarısız</span>
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl>
+                                        <dt class="text-primary fw-semibold">HTTP/HTTPS Erişimi</dt>
+                                        <dd class="mb-3">
+                                            {% if http_headers and not http_headers.error %}
+                                                <span class="badge badge-success">Aktif</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Kapalı</span>
+                                            {% endif %}
+                                        </dd>
+                                        
+                                        <dt class="text-primary fw-semibold">Açık Portlar</dt>
+                                        <dd class="mb-3">
+                                            {% if security_report.open_ports %}
+                                                <span class="badge badge-warning">{{ security_report.open_ports|length }} adet</span>
+                                            {% else %}
+                                                <span class="badge badge-success">Temiz</span>
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Report -->
+            {% if security_report %}
+            <div class="row g-4 mb-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Güvenlik Durumu Raporu
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+
+                                <!-- Anonimlik Durumu Bölümü -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="security-header">
+                                        <i class="bi bi-incognito fs-3 text-primary security-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1">Anonimlik Durumu</h5>
+                                            <p class="text-muted mb-0">Proxy, VPN, Tor veya Botnet Kontrolü</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if security_report.proxy_vpn_tor %}
+                                        <div class="alert alert-danger">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            <strong>Anonim ağ aktivitesi</strong> tespit edildi.
+                                        </div>
+
+                                        {% if security_report.anonymity_services %}
+                                        <p class="mt-3 mb-2 text-muted">Tespit edilen servisler:</p>
+                                        <div>
+                                            {% for service in security_report.anonymity_services %}
+                                                {% set service_lower = service.lower() %}
+                                                <span class="badge fs-6 me-1 mb-1
+                                                    {% if 'tor' in service_lower %} bg-dark 
+                                                    {% elif 'proxy' in service_lower %} bg-warning text-dark 
+                                                    {% elif 'bot' in service_lower or 'spam' in service_lower %} bg-danger
+                                                    {% elif 'vpn' in service_lower %} bg-info
+                                                    {% else %} bg-secondary {% endif %}">
+                                                    
+                                                    {% if 'tor' in service_lower %} 
+                                                        <i class="bi bi-diagram-3 me-1"></i>
+                                                    {% elif 'proxy' in service_lower %} 
+                                                        <i class="bi bi-hdd-stack me-1"></i>
+                                                    {% elif 'vpn' in service_lower %} 
+                                                        <i class="bi bi-shuffle me-1"></i>
+                                                    {% else %} 
+                                                        <i class="bi bi-shield-slash me-1"></i>
+                                                    {% endif %}
+                                                    {{ service }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                    {% else %}
+                                        <div class="alert alert-success">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            Kontrol edilen listelerde anonim ağ veya bot kaydı bulunamadı.
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Security Headers -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="security-header">
+                                        <i class="bi bi-shield-lock fs-3 text-primary security-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1">HTTP Güvenlik Başlıkları</h5>
+                                            <p class="text-muted mb-0">Temel güvenlik başlıkları</p>
+                                        </div>
+                                    </div>
+                                    {% if security_report.security_headers %}
+                                    <div class="alert alert-success">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        <strong>{{ security_report.security_headers|length }} güvenlik başlığı</strong> tespit edildi
+                                    </div>
+                                    <ul class="list-group">
+                                        {% for header in security_report.security_headers %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ header }}
+                                            <span class="badge bg-success">Mevcut</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Temel güvenlik başlıkları bulunamadı
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- SSL/TLS Certificate Analysis -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="security-header">
+                                        <i class="bi bi-shield-lock fs-3 text-primary security-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1">SSL/TLS Sertifika Analizi</h5>
+                                            <p class="text-muted mb-0">Sunucu sertifikası ve şifreleme detayları</p>
+                                        </div>
+                                    </div>
+                                    {% if ssl_info %}
+                                        {% if ssl_info.error %}
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            {{ ssl_info.error }}
+                                        </div>
+                                        {% else %}
+                                        <div class="alert {% if ssl_info.is_valid %}alert-success{% else %}alert-danger{% endif %}">
+                                            <i class="bi {% if ssl_info.is_valid %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+                                            <strong>Sertifika Durumu:</strong> 
+                                            {% if ssl_info.is_valid %}
+                                                Geçerli ({{ ssl_info.days_remaining }} gün kaldı)
+                                            {% else %}
+                                                Geçersiz/Süresi Dolmuş
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <tbody>
+                                                    <tr><th class="text-primary">Ortak Ad (CN)</th><td>{{ ssl_info.common_name or 'Bilinmiyor' }}</td></tr>
+                                                    <tr><th class="text-primary">Kuruluş</th><td>{{ ssl_info.organization or 'Bilinmiyor' }}</td></tr>
+                                                    <tr><th class="text-primary">Geçerlilik</th><td>{{ ssl_info.valid_from }} - {{ ssl_info.valid_until }}</td></tr>
+                                                    <tr><th class="text-primary">Protokol</th><td>{{ ssl_info.protocol }}</td></tr>
+                                                    <tr><th class="text-primary">Şifreleme</th><td>{{ ssl_info.cipher }} ({{ ssl_info.key_size }} bit)</td></tr>
+                                                    <tr><th class="text-primary">Seri No</th><td>{{ ssl_info.serial_number }}</td></tr>
+                                                    <tr><th class="text-primary">İmza Algoritması</th><td>{{ ssl_info.signature_algorithm }}</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {% if not ssl_info.is_valid %}
+                                        <div class="security-issue">
+                                            <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                                            <strong>Uyarı:</strong> Geçersiz veya süresi dolmuş SSL sertifikası
+                                        </div>
+                                        {% endif %}
+                                        {% endif %}
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        SSL/TLS bilgisi alınamadı veya sunucu SSL bağlantısına izin vermiyor
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <!-- DNS Blacklist Kontrolü -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="security-header">
+                                        <i class="bi bi-shield-lock fs-3 text-primary security-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1">DNS Blacklist Kontrolü</h5>
+                                            <p class="text-muted mb-0">IP adresinin spam ve kötü amaçlı listelerde olup olmadığı</p>
+                                        </div>
+                                    </div>
+
+                                    {% if dnsbl_results %}
+                                        {% set listed_entries = [] %}
+                                        {% for category, listings in dnsbl_results.items() %}
+                                            {% for entry in listings %}
+                                                {% if entry.response %}
+                                                    {% set _ = listed_entries.append(entry) %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+
+                                        {% if listed_entries %}
+                                            <div class="alert alert-danger">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                <strong>IP adresi {{ listed_entries | length }} farklı kara listede bulundu!</strong>
+                                            </div>
+
+                                            <div class="accordion" id="dnsblAccordion">
+                                                {% for category, listings in dnsbl_results.items() %}
+                                                    {% set valid_entries = listings | selectattr("response") | list %}
+                                                    {% if valid_entries %}
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header">
+                                                                <button class="accordion-button collapsed" type="button"
+                                                                        data-bs-toggle="collapse" data-bs-target="#collapse{{ category }}">
+                                                                    <i class="bi bi-shield-slash me-2"></i>
+                                                                    {{ category|title }} ({{ valid_entries | length }} liste)
+                                                                </button>
+                                                            </h2>
+                                                            <div id="collapse{{ category }}" class="accordion-collapse collapse"
+                                                                 data-bs-parent="#dnsblAccordion">
+                                                                <div class="accordion-body">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-sm">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>Liste</th>
+                                                                                    <th>Açıklama</th>
+                                                                                    <th>Yanıt</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for entry in valid_entries %}
+                                                                                    <tr>
+                                                                                        <td>{{ entry.dnsbl }}</td>
+                                                                                        <td>{{ entry.description or '-' }}</td>
+                                                                                        <td><span class="badge bg-danger">{{ entry.response }}</span></td>
+                                                                                    </tr>
+                                                                                {% endfor %}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+
+                                        {% else %}
+                                            <div class="alert alert-success">
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                IP adresi kontrol edilen kara listelerde bulunamadı. Güvenli görünüyor.
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            DNSBL sonucu alınamadı.
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+
+                                <!-- Open Ports -->
+                                <div class="col-md-12 mb-4">
+                                    <div class="security-header">
+                                        <i class="bi bi-door-open fs-3 text-primary security-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1">Açık Portlar ({{ security_report.open_ports|length }})</h5>
+                                            <p class="text-muted mb-0">Tespit edilen açık portlar ve servisler</p>
+                                        </div>
+                                    </div>
+                                    {% if security_report.open_ports %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Port</th><th>Servis</th><th>Ürün</th><th>Versiyon</th><th>Durum</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for port in security_report.open_ports %}
+                                                <tr>
+                                                    <td><strong>{{ port.port }}</strong></td>
+                                                    <td>{{ port.name }}</td>
+                                                    <td>{{ port.product }}</td>
+                                                    <td>{{ port.version }}</td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if port.port in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+                                                            21,22,23,25,53,69,80,110,111,135,139,143,161,162,443,445,514,993,995,1433,
+                                                            1434,1521,1720,1721,1722,1723,2049,2375,2376,2377,2378,2379,3306,3389,4848,
+                                                            5000,5001,5002,5003,5004,5005,5006,5007,5008,5009,5010,5432,5601,5900,5901,
+                                                            5902,5903,5904,5905,5984,6379,8080,8081,8082,8086,8443,8888,9000,9001,9002,
+                                                            9003,9004,9005,9006,9007,9008,9009,9010,9100,9200,9201,9202,9203,9204,9205,
+                                                            9300,9301,9302,9303,9304,9305,9418,10000,10050,10051,11211,2222] %}
+                                                                badge-danger
+                                                            {% else %}
+                                                                badge-warning
+                                                            {% endif %}">
+                                                            {{ port.state }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-success">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        Taranan portlar arasında açık port bulunamadı
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Security Issues -->
+                                {% if security_report.security_issues %}
+                                <div class="col-md-12">
+                                    <div class="security-header">
+                                        <i class="bi bi-exclamation-triangle fs-3 text-danger security-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1">Güvenlik Uyarıları</h5>
+                                            <p class="text-muted mb-0">Tespit edilen potansiyel güvenlik sorunları</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        {% for issue in security_report.security_issues %}
+                                        <div class="security-issue">
+                                            <i class="bi bi-exclamation-circle-fill text-danger me-2"></i>
+                                            {{ issue }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="col-md-12">
+                                    <div class="security-header">
+                                        <i class="bi bi-shield-check fs-3 text-success security-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1">Güvenlik Durumu</h5>
+                                            <p class="text-muted mb-0">Temel güvenlik kontrolleri başarılı</p>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-success mt-3">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        <strong>Güvenlik durumu iyi:</strong> Temel güvenlik kontrollerinde kritik sorun tespit edilmedi
+                                    </div>
+                                </div>
+                                {% endif %} <!-- end if security_issues -->
+                            </div> <!-- .row -->
+                        </div> <!-- .card-body -->
+                    </div> <!-- .card -->
+                </div> <!-- .col-12 -->
+            </div> <!-- .row -->
+            {% endif %} <!-- end if security_report -->
+
+            <!-- Detailed Analysis Accordion -->
+            <h3 class="section-title mb-4">
+                <i class="bi bi-gear-wide-connected me-2"></i>
+                Detaylı Analiz Raporları
+            </h3>
+            
+            <div class="accordion" id="detailsAccordion">
+
+                {% if mtr_data %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMtr">
+                            <i class="bi bi-geo-alt-fill me-2"></i>
+                            <strong>Ağ Yolu ve Kayıp Analizi (MTR)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseMtr" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            {% if mtr_data.error %}
+                                <div class="alert alert-danger" role="alert">
+                                    <h5 class="alert-heading">MTR Analizi Hatası!</h5>
+                                    <p>{{ mtr_data.error }}</p>
+                                    {% if mtr_data.details %}
+                                        <hr>
+                                        <p class="mb-0">{{ mtr_data.details }}</p>
+                                    {% endif %}
+                                </div>
+                            {% elif mtr_data.hops %}
+                                <p class="text-muted mb-3">Hedefe giden ağ yolu üzerindeki her atlama noktasında paket kaybı ve gecikme analizi.</p>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Host / IP</th>
+                                                <th class="text-center">Paket Kaybı</th>
+                                                <th class="text-end">Ort. Gecikme</th>
+                                                <th class="text-end">En İyi</th>
+                                                <th class="text-end">En Kötü</th>
+                                                <th class="text-end">Son</th> {# Added 'Last' column #}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for hop in mtr_data.hops %}
+                                            <tr class="{% if hop.loss > 5 %} table-danger {% elif hop.loss > 0 %} table-warning {% endif %}">
+                                                <td>{{ hop.count }}</td>
+                                                <td>
+                                                    {{ hop.host }}
+                                                    {% if hop.is_private %}
+                                                        <span class="badge bg-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Bu özel bir IP adresidir ve genellikle dahili ağlarda kullanılır.">Özel IP</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge {% if hop.loss > 5 %} bg-danger {% elif hop.loss > 0 %} bg-warning text-dark {% else %} bg-success {% endif %}">
+                                                        {{ "%.1f"|format(hop.loss) }}%
+                                                    </span>
+                                                </td>
+                                                <td class="text-end fw-bold">{{ "%.1f"|format(hop.avg) }} ms</td>
+                                                <td class="text-end">{{ "%.1f"|format(hop.best) }} ms</td>
+                                                <td class="text-end">{{ "%.1f"|format(hop.worst) }} ms</td>
+                                                <td class="text-end">{{ "%.1f"|format(hop.last) }} ms</td> {# Display 'Last' #}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="text-muted mt-3">Toplam Atlama Sayısı: <strong>{{ mtr_data.total_hops }}</strong> | Genel Paket Kaybı: <strong>{{ "%.1f"|format(mtr_data.packet_loss) }}%</strong></p>
+                            {% else %}
+                                <div class="alert alert-info text-center" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i> MTR analizi için veri bulunamadı veya analiz tamamlanamadı.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if whois_data %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWhois">
+                            <i class="bi bi-person-badge-fill me-2"></i>
+                            <strong>WHOIS Bilgileri</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseWhois" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <tbody>
+                                        {% for key, value in whois_data.items() %}
+                                        <tr>
+                                            <th style="width: 20%;">{{ key | replace('_', ' ') | title }}</th>
+                                            <td>
+                                                {% if value is string %}
+                                                    {{ value }}
+                                                {% elif value is iterable and value is not string %}
+                                                    {% for item in value %}
+                                                        {{ item }}<br>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if dns_records %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDns">
+                            <i class="bi bi-list-nested me-2"></i>
+                            <strong>DNS Kayıtları</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseDns" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+
+                            {% if dns_records.A %}
+                                <h6 class="text-primary mt-2"><i class="bi bi-hdd-network me-1"></i> A Kayıtları (IPv4)</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for ip in dns_records.A %}
+                                    <li class="list-group-item">{{ ip }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            {% if dns_records.AAAA %}
+                                <h6 class="text-primary mt-2">AAAA Kayıtları (IPv6)</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for ip in dns_records.AAAA %}
+                                    <li class="list-group-item">{{ ip }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {% if dns_records.PTR %}
+                                <h6 class="text-primary mt-2">PTR Kayıtları</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for ptr in dns_records.PTR %}
+                                    <li class="list-group-item">IP: {{ ptr.ip }} - PTR: {{ ptr.ptr }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            {% if dns_records.CNAME %}
+                                <h6 class="text-primary mt-2"><i class="bi bi-link-45deg me-1"></i> CNAME Kaydı</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item">{{ dns_records.CNAME }}</li>
+                                </ul>
+                            {% endif %}
+
+                            {% if dns_records.MX %}
+                                <h6 class="text-primary mt-2"><i class="bi bi-envelope-fill me-1"></i> MX Kayıtları (Mail Server)</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for mx in dns_records.MX %}
+                                    <li class="list-group-item"><strong>{{ mx.preference }}</strong> - {{ mx.exchange }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            {% if dns_records.NS %}
+                                <h6 class="text-primary mt-2"><i class="bi bi-diagram-3-fill me-1"></i> NS Kayıtları (Name Server)</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for ns in dns_records.NS %}
+                                    <li class="list-group-item">{{ ns }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            {% if dns_records.SOA %}
+                                <h6 class="text-primary mt-2">SOA Kaydı</h6>
+                                <pre class="bg-light p-2">{{ dns_records.SOA }}</pre>
+                            {% endif %}
+
+                            {% if dns_records.TXT %}
+                                <h6 class="text-primary mt-2"><i class="bi bi-file-earmark-text me-1"></i> TXT Kayıtları</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for txt in dns_records.TXT %}
+                                    <li class="list-group-item">{{ txt }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            {% if not dns_records.A and not dns_records.AAAA and not dns_records.MX and not dns_records.NS and not dns_records.SOA and not dns_records.TXT and not dns_records.CNAME %}
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="bi bi-info-circle-fill me-2"></i> DNS kaydı bulunamadı.
+                            </div>
+                            {% endif %}
+                            {% if dns_records.CAA %}
+                                <h6 class="text-primary mt-2">CAA Kayıtları</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for caa in dns_records.CAA %}
+                                    <li class="list-group-item">{{ caa }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if wayback_snapshots %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button {% if not wayback_snapshots.error %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWayback">
+                            <i class="bi bi-archive-fill me-2"></i>
+                            <strong>Wayback Machine Geçmiş Kayıtları</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseWayback" class="accordion-collapse collapse {% if wayback_snapshots.error %}show{% endif %}" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            {% if wayback_snapshots.error %}
+                            <div class="alert alert-danger" role="alert">
+                                <h5 class="alert-heading">Wayback Machine Analizi Hatası!</h5>
+                                <p>{{ wayback_snapshots.error }}</p>
+                            </div>
+                            {% elif wayback_snapshots.closest_snapshot %}
+                            <p class="text-muted mb-3">Wayback Machine'de bulunan en yakın arşivlenmiş kayıt:</p>
+                            <div class="bg-light p-3 rounded shadow-sm">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Tarih:</dt>
+                                    <dd class="col-sm-8">{{ wayback_snapshots.closest_snapshot.timestamp }}</dd>
+                                    <dt class="col-sm-4">Bağlantı:</dt>
+                                    <dd class="col-sm-8 text-break"><a href="{{ wayback_snapshots.closest_snapshot.url }}" target="_blank">{{ wayback_snapshots.closest_snapshot.url }}</a></dd>
+                                </dl>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="bi bi-info-circle-fill me-2"></i> Wayback Machine'de geçmiş kayıt bulunamadı.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Port Scan Results -->
+                {% if port_scan %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePorts">
+                            <i class="bi bi-door-open-fill me-2"></i>
+                            <strong>Açık Port Taraması (Nmap)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapsePorts" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            {% if port_scan.error %}
+                                <div class="alert alert-warning">{{ port_scan.error }}</div>
+                            {% elif port_scan.ports %}
+                                <p class="text-muted mb-3">Hedef üzerinde bulunan açık TCP portları ve servis bilgileri:</p>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Port</th>
+                                                <th>Durum</th>
+                                                <th>Servis</th>
+                                                <th>Ürün</th>
+                                                <th>Versiyon</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for p in port_scan.ports %}
+                                            <tr>
+                                                <td><strong>{{ p.port }}</strong></td>
+                                                <td><span class="badge badge-success">{{ p.state }}</span></td>
+                                                <td>{{ p.name }}</td>
+                                                <td>{{ p.product }}</td>
+                                                <td>{{ p.version }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted text-center">Taranan portlar arasında açık bir port bulunamadı.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %} <!-- end if port_scan -->
+                
+                {% if ssl_info %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button {% if not ssl_info.error %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSSL">
+                                <i class="bi bi-file-earmark-lock2-fill me-2"></i>
+                                <strong>Detaylı SSL/TLS Sertifika Bilgileri</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseSSL" class="accordion-collapse collapse {% if ssl_info.error %}show{% endif %}" data-bs-parent="#detailsAccordion">
+                            <div class="accordion-body">
+                                {% if ssl_info.error %}
+                                    <div class="alert alert-danger" role="alert">
+                                        <h5 class="alert-heading">SSL/TLS Analiz Hatası!</h5>
+                                        <p>{{ ssl_info.error }}</p>
+                                    </div>
+                                {% else %}
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="bi bi-person-fill me-2"></i>Sertifika Konusu (Subject)</h6>
+                                            <div class="bg-light p-3 rounded shadow-sm">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">Ortak Ad (CN):</dt>
+                                                    <dd class="col-sm-8 text-break">{{ ssl_info.common_name if ssl_info.common_name else 'N/A' }}</dd>
+
+                                                    {% if ssl_info.subject.C %}
+                                                    <dt class="col-sm-4">Ülke (C):</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.subject.C }}</dd>
+                                                    {% endif %}
+                                                    {% if ssl_info.subject.ST %}
+                                                    <dt class="col-sm-4">Eyalet/İl (ST):</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.subject.ST }}</dd>
+                                                    {% endif %}
+                                                    {% if ssl_info.subject.L %}
+                                                    <dt class="col-sm-4">Şehir (L):</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.subject.L }}</dd>
+                                                    {% endif %}
+                                                    <dt class="col-sm-4">Kuruluş (O):</dt>
+                                                    <dd class="col-sm-8 text-break">{{ ssl_info.organization if ssl_info.organization else 'N/A' }}</dd>
+                                                    {% if ssl_info.subject.OU %}
+                                                    <dt class="col-sm-4">Kuruluş Birimi (OU):</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.subject.OU }}</dd>
+                                                    {% endif %}
+                                                    {% if ssl_info.subject.emailAddress %}
+                                                    <dt class="col-sm-4">E-posta:</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.subject.emailAddress }}</dd>
+                                                    {% endif %}
+                                                </dl>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="bi bi-building me-2"></i>Sertifika Yayıncısı (Issuer)</h6>
+                                            <div class="bg-light p-3 rounded shadow-sm">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">Ortak Ad (CN):</dt>
+                                                    <dd class="col-sm-8 text-break">{{ ssl_info.issuer.CN if ssl_info.issuer.CN else 'N/A' }}</dd>
+                                                    {% if ssl_info.issuer.C %}
+                                                    <dt class="col-sm-4">Ülke (C):</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.issuer.C }}</dd>
+                                                    {% endif %}
+                                                    {% if ssl_info.issuer.O %}
+                                                    <dt class="col-sm-4">Kuruluş (O):</dt>
+                                                    <dd class="col-sm-8 text-break">{{ ssl_info.issuer.O }}</dd>
+                                                    {% endif %}
+                                                    {% if ssl_info.issuer.OU %}
+                                                    <dt class="col-sm-4">Kuruluş Birimi (OU):</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.issuer.OU }}</dd>
+                                                    {% endif %}
+                                                    {% if ssl_info.issuer.emailAddress %}
+                                                    <dt class="col-sm-4">E-posta:</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.issuer.emailAddress }}</dd>
+                                                    {% endif %}
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="bi bi-calendar-check-fill me-2"></i>Geçerlilik Tarihleri</h6>
+                                            <div class="bg-light p-3 rounded shadow-sm">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">Başlangıç:</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.valid_from }}</dd>
+                                                    <dt class="col-sm-4">Bitiş:</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.valid_until }}</dd>
+                                                    <dt class="col-sm-4">Kalan Gün:</dt>
+                                                    <dd class="col-sm-8">
+                                                        <span class="badge {% if ssl_info.days_remaining < 30 %}bg-danger{% elif ssl_info.days_remaining < 90 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                                            {{ ssl_info.days_remaining }} gün
+                                                        </span>
+                                                        {% if not ssl_info.is_valid %}
+                                                            <span class="badge bg-danger ms-2">Süresi Doldu!</span>
+                                                        {% endif %}
+                                                    </dd>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="bi bi-lock-fill me-2"></i>Bağlantı ve Şifreleme</h6>
+                                            <div class="bg-light p-3 rounded shadow-sm">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">Protokol:</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.protocol if ssl_info.protocol else 'N/A' }}</dd>
+                                                    {% if ssl_info.cipher %}
+                                                    <dt class="col-sm-4">Şifreleme Adı:</dt>
+                                                    <dd class="col-sm-8 text-break">{{ ssl_info.cipher.name }}</dd>
+                                                    <dt class="col-sm-4">Şifreleme Versiyonu:</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.cipher.version }}</dd>
+                                                    <dt class="col-sm-4">Anahtar Büyüklüğü (Bit):</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.cipher.bits }}</dd>
+                                                    {% else %}
+                                                    <dt class="col-sm-12">Şifreleme bilgisi alınamadı.</dt>
+                                                    {% endif %}
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-4">
+                                        <div class="col-md-12">
+                                            <h6 class="text-primary mb-3"><i class="bi bi-globe me-2"></i>Alternatif İsimler (SAN)</h6>
+                                            <div class="bg-light p-3 rounded shadow-sm">
+                                                {% if ssl_info.alt_names %}
+                                                    <ul class="list-unstyled mb-0">
+                                                        {% for name in ssl_info.alt_names %}
+                                                            <li><i class="bi bi-dot me-1"></i> {{ name }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% else %}
+                                                    <p class="mb-0 text-muted">Alternatif isim bulunamadı (SANs).</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6 class="text-primary mb-3"><i class="bi bi-info-circle-fill me-2"></i>Ek Sertifika Detayları</h6>
+                                            <div class="bg-light p-3 rounded shadow-sm">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">Seri Numarası:</dt>
+                                                    <dd class="col-sm-8 text-break">{{ ssl_info.serial_number }}</dd>
+                                                    <dt class="col-sm-4">İmza Algoritması:</dt>
+                                                    <dd class="col-sm-8">{{ ssl_info.signature_algorithm }}</dd>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <h6 class="text-primary mb-2"><i class="bi bi-code-slash me-2"></i>Ham SSL Verisi</h6>
+                                        <div class="bg-dark text-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-family: monospace; font-size: 0.85em;">
+                                            {{ ssl_info | tojson(indent=2) }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- HTTP Headers -->
+                {% if http_headers and not http_headers.error %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHeaders">
+                            <i class="bi bi-file-text-fill me-2"></i>
+                            <strong>HTTP Başlıkları (Headers)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseHeaders" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Nihai Yanıt Başlıkları ({{ http_headers.final_url }})
+                            </h6>
+                            <div class="table-responsive mb-4">
+                                <table class="table table-striped table-bordered align-middle">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th style="width: 30%">Başlık</th>
+                                            <th>Değer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for key, value in http_headers.headers.items() %}
+                                        <tr>
+                                            <td class="fw-semibold text-primary">{{ key }}</td>
+                                            <td style="word-break: break-all; font-family: 'Courier New', monospace;">{{ value }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            {% if http_headers.history %}
+                            <h6 class="text-primary mt-4 mb-3">
+                                <i class="bi bi-arrow-repeat me-2"></i>
+                                Yönlendirme Geçmişi
+                            </h6>
+                            {% for h in http_headers.history %}
+                                <div class="redirect-item">
+                                    <span class="redirect-number">{{ loop.index }}.</span>
+                                    <span class="redirect-url">{{ h.url }}</span>
+                                    <span class="badge badge-warning">Kod: {{ h.status_code }}</span>
+                                </div>
+                            {% endfor %}
+                            {% endif %}
+
+                            <!-- Ham HTTP Başlıkları metin olarak -->
+                            <div class="mt-4">
+                                <h6 class="text-primary mb-2"><i class="bi bi-code-slash me-2"></i>Ham HTTP Başlığı</h6>
+                                <div class="bg-dark text-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-family: monospace;">
+                                    {{ http_headers }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %} <!-- end if http_headers -->
+
+                <!-- Geographic Location Map -->
+                {% if ipinfo_data and ipinfo_data.loc %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIpInfo">
+                            <i class="bi bi-map-fill me-2"></i>
+                            <strong>Genel IP Bilgisi</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseIpInfo" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <div id="map-ipinfo" class="map-container mb-4"></div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl>
+                                        <dt class="text-primary fw-semibold">Hostname</dt>
+                                        <dd class="mb-2">{{ ipinfo_data.hostname or 'N/A' }}</dd>
+                                        
+                                        <dt class="text-primary fw-semibold">Servis Sağlayıcı</dt>
+                                        <dd class="mb-2">{{ ipinfo_data.org or 'N/A' }}</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl>
+                                        <dt class="text-primary fw-semibold">Lokasyon</dt>
+                                        <dd class="mb-2">
+                                            {{ ipinfo_data.city or '' }}, 
+                                            {{ ipinfo_data.region or '' }}, 
+                                            {{ ipinfo_data.country or '' }}
+                                            {% if ipinfo_data.country_name %}
+                                            <br><small class="text-muted">({{ ipinfo_data.country_name }})</small>
+                                            {% endif %}
+                                        </dd>
+                                        
+                                        <dt class="text-primary fw-semibold">Koordinatlar</dt>
+                                        <dd class="mb-2">{{ ipinfo_data.loc or 'N/A' }}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <!-- Ham ipinfo_data JSON görünümü -->
+                            <div class="mt-4">
+                                <h6 class="text-primary mb-2"><i class="bi bi-code-slash me-2"></i>Ham IP Info Verisi</h6>
+                                <div class="bg-dark text-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-family: monospace;">
+                                    {{ ipinfo_data }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %} <!-- end if ipinfo_data -->
+                {% if dns_records %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDnsRecords">
+                            <i class="bi bi-card-list me-2"></i>
+                            <strong>DNS Kayıtları</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseDnsRecords" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Yetkili DNS:</strong> {{ authoritative_dns if authoritative_dns else "Bulunamadı" }}</p>
+                                    <p><strong>DNSSEC Durumu:</strong> {{ dnssec_status }}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                {% for record_type, records in dns_records.items() %}
+                                    {% if records %}
+                                        <div class="col-md-6 mb-3">
+                                            <h5>{{ record_type }} Kayıtları</h5>
+                                            <ul class="list-unstyled">
+                                                {% if record_type == 'MX' %}
+                                                    {% for mx_record in records %}
+                                                        <li><strong>Tercih:</strong> {{ mx_record.preference }} - <strong>Değişim:</strong> {{ mx_record.exchange }}</li>
+                                                    {% endfor %}
+                                                {% elif record_type == 'PTR' %}
+                                                    {% for ptr_record in records %}
+                                                        <li><strong>IP:</strong> {{ ptr_record.ip }} - <strong>PTR:</strong> {{ ptr_record.ptr }}</li>
+                                                    {% endfor %}
+                                                {% elif record_type == 'SOA' %}
+                                                    {% for key, value in records.items() %}
+                                                        <li><strong>{{ key | upper }}:</strong> {{ value }}</li>
+                                                    {% endfor %}
+                                                {% elif record_type == 'SRV' %}
+                                                    {% for srv_record in records %}
+                                                        <li><strong>Hedef:</strong> {{ srv_record.target }} - <strong>Port:</strong> {{ srv_record.port }} - <strong>Öncelik:</strong> {{ srv_record.priority }} - <strong>Ağırlık:</strong> {{ srv_record.weight }}</li>
+                                                    {% endfor %}
+                                                {% elif record_type == 'CAA' %}
+                                                    {% for caa_record in records %}
+                                                        <li><strong>Bayrak:</strong> {{ caa_record.flags }} - <strong>Etiket:</strong> {{ caa_record.tag }} - <strong>Değer:</strong> {{ caa_record.value }}</li>
+                                                    {% endfor %}
+                                                {% elif record_type == 'CNAME' %}
+                                                    <li>{{ records }}</li>
+                                                {% else %}
+                                                    {% for record in records %}
+                                                        <li>{{ record }}</li>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <!-- Traceroute Map -->
+                {% if traceroute_locations %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTraceroute">
+                            <i class="bi bi-signpost-split-fill me-2"></i>
+                            <strong>Enhanced Traceroute Analysis</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseTraceroute" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                This traceroute shows the path packets take to reach {{ target_ip }} with geolocation data for each hop.
+                            </div>
+                            
+                            <!-- Interactive Map -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-map me-2"></i>
+                                    Network Path Visualization
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="map-traceroute" class="map-container" style="height: 500px;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hop Details -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-diagram-3 me-2"></i>
+                                    Network Hops Details
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>IP Address</th>
+                                                    <th>Location</th>
+                                                    <th>Network Information</th>
+                                                    <th>Latency</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for hop in traceroute_locations %}
+                                                <tr>
+                                                    <td>{{ hop.ttl }}</td>
+                                                    <td>
+                                                        <code>{{ hop.ip }}</code>
+                                                        {% if hop.location and hop.location.reverse_dns %}
+                                                        <br><small class="text-muted">{{ hop.location.reverse_dns }}</small>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if hop.location %}
+                                                            {% if hop.location.city and hop.location.country %}
+                                                                {{ hop.location.city }}, {{ hop.location.country }}
+                                                                {% if hop.location.country_name %}
+                                                                <br><small class="text-muted">{{ hop.location.country_name }}</small>
+                                                                {% endif %}
+                                                            {% else %}
+                                                                Unknown location
+                                                            {% endif %}
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                ({{ "%.4f"|format(hop.location.lat) }}, {{ "%.4f"|format(hop.location.lon) }})
+                                                            </small>
+                                                        {% else %}
+                                                            <span class="text-muted">Private/Unknown</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if hop.location %}
+                                                            <strong>ISP:</strong> {{ hop.location.isp or 'Unknown' }}<br>
+                                                            {% if hop.location.org %}
+                                                                <strong>Org:</strong> {{ hop.location.org }}<br>
+                                                            {% endif %}
+                                                            {% if hop.location.as_number %}
+                                                                <strong>AS:</strong> {{ hop.location.as_number }}<br>
+                                                                {% if hop.location.as_name %}
+                                                                    <small>{{ hop.location.as_name }}</small>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span class="text-muted">No network data</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <!-- Placeholder for latency data -->
+                                                        <span class="badge bg-secondary">N/A</span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Network Analysis -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    Path Analysis
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5><i class="bi bi-info-square me-2"></i>Path Summary</h5>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Total Hops
+                                                    <span class="badge bg-primary rounded-pill">{{ traceroute_locations|length }}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Public Routers
+                                                    <span class="badge bg-success rounded-pill">
+                                                        {{ traceroute_locations|selectattr("location")|list|length }}
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Private/Unknown
+                                                    <span class="badge bg-warning rounded-pill">
+                                                        {{ traceroute_locations|rejectattr("location")|list|length }}
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5><i class="bi bi-globe me-2"></i>Geographical Distribution</h5>
+                                            <div id="path-countries-chart" style="height: 200px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Raw Data -->
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-code me-2"></i>
+                                    Raw Traceroute Data
+                                </div>
+                                <div class="card-body">
+                                    <div class="bg-dark text-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-family: monospace;">
+                                        {{ traceroute_locations|tojson(indent=2) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+                {% endif %} <!-- end if traceroute_locations -->
+
+
+                {% if bgp_graph_data %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBgpGraph">
+                            <i class="bi bi-diagram-3-fill me-2"></i>
+                            <strong>BGP AS Path Görselleştirmesi</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseBgpGraph" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Gözlem noktalarından hedefe giden BGP AS yolları. Farklı renkler, farklı yolları temsil eder. Yakınlaşmak ve sürüklemek için fareyi kullanabilirsiniz.</p>
+                            
+                            <div id="bgp-graph-container" class="bgp-graph-container"></div>
+
+                            <div id="tooltip" class="tooltip" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- BGP Analysis -->
+                {% if additional_data %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRipestat">
+                            <i class="bi bi-diagram-3-fill me-2"></i>
+                            <strong>Gelişmiş BGP & Yönlendirme Analizi</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseRipestat" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            {% for title, api_data in additional_data.items() %}
+                                <h6 class="text-primary mt-4 mb-3">{{ title }}</h6>
+                                {% if api_data.error %}
+                                    <p class="text-muted">{{ api_data.error }}</p>
+                                {% else %}
+                                    <div class="bg-dark text-light p-3 rounded">
+                                        <pre class="mb-0">{{ json.dumps(api_data, indent=2, ensure_ascii=False) }}</pre>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %} <!-- end if additional_data -->
+
+                <!-- Raw RDAP Response -->
+                {% if raw_json %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRawJson">
+                            <i class="bi bi-filetype-json me-2"></i>
+                            <strong>Tam RDAP Yanıtı</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseRawJson" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <div class="bg-dark text-light p-3 rounded">
+                                <pre class="mb-0 text-light">{{ raw_json }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %} <!-- end if raw_json -->
+            </div> <!-- .accordion -->
+        </div> <!-- .container -->
+    </div> <!-- .main-container -->
+    {% endif %} <!-- end if data -->
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+        <div class="container">
+            <p class="mb-0">
+                © 2024 Turkcell Global IP Sorgulama Sistemi. 
+                Veriler IANA, RIPEstat, ipinfo.io ve diğer halka açık kaynaklardan alınmaktadır.
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const initMapOnce = (mapElement, initCallback) => {
+            if (!mapElement) return;
+            const accordionEl = mapElement.closest('.accordion-collapse');
+            if (!accordionEl) return;
+            
+            const initializeMap = () => {
+                if (mapElement._leaflet_id) return;
+                
+                const map = L.map(mapElement.id, {
+                    preferCanvas: true,
+                    zoomControl: true
+                });
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+                
+                initCallback(map);
+                setTimeout(() => {
+                    map.invalidateSize();
+                    map.fitBounds(map.getBounds(), {padding: [20, 20]});
+                }, 100);
+            };
+            
+            if (accordionEl.classList.contains('show')) {
+                initializeMap();
+            }
+            
+            accordionEl.addEventListener('shown.bs.collapse', initializeMap);
+        };
+
+        // IPInfo Map
+        {% if ipinfo_data %}
+        const ipInfoData = {{ ipinfo_data | tojson | safe }};
+        if (ipInfoData && ipInfoData.loc) {
+            initMapOnce(document.getElementById('map-ipinfo'), (map) => {
+                const coords = ipInfoData.loc.split(',').map(Number);
+                map.setView(coords, 10);
+                
+                L.marker(coords, {
+                    icon: L.icon({
+                        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41]
+                    })
+                }).addTo(map)
+                .bindPopup(`
+                    <b>Yaklaşık Konum</b><br>
+                    ${ipInfoData.city || ''}, ${ipInfoData.region || ''}, ${ipInfoData.country_name || ipInfoData.country || ''}
+                `).openPopup();
+            });
+        }
+        {% endif %}
+        
+        // BGP Graph Visualization
+        {% if bgp_graph_data %}
+            const bgpGraphContainer = document.getElementById('bgp-graph-container');
+
+            if (bgpGraphContainer) {
+                const accordionEl = bgpGraphContainer.closest('.accordion-collapse');
+                let graphInitialized = false; 
+
+                const drawGraph = () => {
+                    if (graphInitialized || !bgpGraphContainer.clientWidth || !bgpGraphContainer.clientHeight) {
+                        console.warn("BGP Graph: Konteyner boyutu sıfır veya grafik zaten çizilmiş. Çizim atlandı.");
+                        return;
+                    }
+                    graphInitialized = true;
+
+                    const nodes = {{ bgp_graph_data.nodes | tojson | safe }}; 
+                    const links = {{ bgp_graph_data.links | tojson | safe }}; 
+
+                    const width = bgpGraphContainer.clientWidth;
+                    const height = Math.max(500, bgpGraphContainer.clientHeight); 
+
+                    const linkedByIndex = {};
+                    links.forEach(d => {
+                        linkedByIndex[`${d.source},${d.target}`] = 1;
+                        linkedByIndex[`${d.target},${d.source}`] = 1; 
+                    });
+
+                    function areNodesConnected(a, b) {
+                        return linkedByIndex[`${a.id},${b.id}`] || linkedByIndex[`${b.id},${a.id}`] || a.id === b.id;
+                    }
+
+                    d3.select(bgpGraphContainer).select("svg").remove();
+
+                    const svg = d3.select(bgpGraphContainer).append("svg")
+                        .attr("width", width)
+                        .attr("height", height)
+                        .attr("viewBox", `0 0 ${width} ${height}`); 
+
+                    svg.append("defs").selectAll("marker")
+                        .data(["end"])
+                        .enter().append("marker")
+                        .attr("id", String)
+                        .attr("viewBox", "0 -5 10 10")
+                        .attr("refX", 15) 
+                        .attr("refY", 0)
+                        .attr("markerWidth", 6)
+                        .attr("markerHeight", 6)
+                        .attr("orient", "auto") 
+                        .append("path")
+                        .attr("d", "M0,-5L10,0L0,5")
+                        .attr("class", "arrowhead")
+                        .attr("fill", "#999"); 
+
+                    const g = svg.append("g"); 
+
+                    const zoom = d3.zoom()
+                        .scaleExtent([0.1, 8]) 
+                        .on("zoom", (event) => {
+                            g.attr("transform", event.transform); 
+                        });
+
+                    svg.call(zoom); 
+
+                    const simulation = d3.forceSimulation(nodes)
+                        .force("link", d3.forceLink(links).id(d => d.id).distance(150).strength(0.5)) 
+                        .force("charge", d3.forceManyBody().strength(-1000)) 
+                        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.1)) 
+                        .force("collide", d3.forceCollide().radius(25).strength(1)); 
+
+                    const link = g.append("g")
+                        .attr("stroke-opacity", 0.7)
+                        .selectAll("line")
+                        .data(links)
+                        .join("line")
+                        .attr("class", "link")
+                        .attr("stroke-width", 2)
+                        .attr("stroke", d => d.color || "#999") 
+                        .attr("marker-end", "url(#end)"); 
+
+                    const node = g.append("g")
+                        .attr("stroke", "#fff")
+                        .attr("stroke-width", 1.5)
+                        .selectAll("g")
+                        .data(nodes)
+                        .join("g")
+                        .call(drag(simulation)); 
+
+                    node.append("circle")
+                        .attr("r", 12) 
+                        .attr("fill", d => d.color);
+
+                    node.append("text")
+                        .attr("x", 16)
+                        .attr("y", "0.31em") 
+                        .text(d => d.id) 
+                        .attr("stroke", "none")
+                        .attr("stroke-width", 0)
+                        .style("font-size", "12px")
+                        .style("paint-order", "stroke") 
+                        .style("stroke", "#fff") 
+                        .style("stroke-width", "3px"); 
+
+                    const tooltip = d3.select("#tooltip");
+
+                    function mouseover(event, d) {
+                        tooltip.html(`
+                            <h6>AS Bilgisi: <code>${d.id}</code></h6>
+                            <p><strong>Ad:</strong> ${d.name || 'N/A'}</p>
+                            <p><strong>Ülke:</strong> ${d.country || 'N/A'}</p>
+                            <p><strong>Tip:</strong> ${d.node_type ? (d.node_type.charAt(0).toUpperCase() + d.node_type.slice(1)) : 'N/A'}</p>
+                            <hr>
+                            <p>${d.description || 'Açıklama mevcut değil.'}</p>
+                        `)
+                            .style("left", (event.pageX + 15) + "px")
+                            .style("top", (event.pageY - 28) + "px")
+                            .style("opacity", 1)
+                            .style("visibility", "visible");
+
+                        node.transition().duration(100).style('opacity', o => areNodesConnected(d, o) ? 1 : 0.15);
+                        link.transition().duration(100).style('stroke-opacity', o => o.source.id === d.id || o.target.id === d.id ? 0.9 : 0.1);
+                        
+                        d3.select(this).select('circle').transition().duration(100).attr('r', 16); 
+                    }
+
+                    function mouseout() {
+                        tooltip.style("opacity", 0)
+                                .style("visibility", "hidden");
+                        node.transition().duration(200).style('opacity', 1);
+                        link.transition().duration(200).style('stroke-opacity', 0.7);
+                        d3.select(this).select('circle').transition().duration(200).attr('r', 12); 
+                    }
+
+                    node.on("mouseover", mouseover).on("mouseout", mouseout);
+                    
+                    simulation.on("tick", () => {
+                        link
+                            .attr("x1", d => d.source.x)
+                            .attr("y1", d => d.source.y)
+                            .attr("x2", d => d.target.x)
+                            .attr("y2", d => d.target.y);
+                        
+                        node.attr("transform", d => `translate(${d.x},${d.y})`);
+                    });
+
+                    function drag(simulation) {
+                        function dragstarted(event, d) { 
+                            if (!event.active) simulation.alphaTarget(0.3).restart(); 
+                            d.fx = d.x; 
+                            d.fy = d.y; 
+                        }
+                        function dragged(event, d) { 
+                            d.fx = event.x; 
+                            d.fy = event.y; 
+                        }
+                        function dragended(event, d) { 
+                            if (!event.active) simulation.alphaTarget(0); 
+                            d.fx = null; 
+                            d.fy = null; 
+                        }
+                        return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended);
+                    }
+                };
+
+                if (accordionEl) {
+                    accordionEl.addEventListener('shown.bs.collapse', drawGraph);
+                    if (accordionEl.classList.contains('show')) {
+                        drawGraph();
+                    }
+                }
+            }
+        {% endif %}
+        
+        // Traceroute Map
+        {% if traceroute_locations %}
+        initMapOnce(document.getElementById('map-traceroute'), (map) => {
+            const validHops = [
+                {% for hop in traceroute_locations %}
+                {
+                    ttl: {{ hop.ttl }},
+                    ip: '{{ hop.ip }}',
+                    {% if hop.location and hop.location.lat and hop.location.lon %}
+                    lat: {{ hop.location.lat }},
+                    lon: {{ hop.location.lon }},
+                    city: '{{ hop.location.city or '' }}',
+                    country: '{{ hop.location.country or '' }}',
+                    isp: '{{ hop.location.isp or '' }}',
+                    as_number: '{{ hop.location.as_number or '' }}',
+                    as_name: '{{ hop.location.as_name or '' }}',
+                    reverse_dns: '{{ hop.location.reverse_dns or '' }}',
+                    valid: true
+                    {% else %}
+                    valid: false
+                    {% endif %}
+                },
+                {% endfor %}
+            ].filter(hop => hop.valid);
+
+            if (validHops.length === 0) {
+                map.setView([20, 0], 2);
+                L.marker([20, 0]).addTo(map)
+                    .bindPopup('Traceroute için geolocation verisi bulunamadı')
+                    .openPopup();
+                return;
+            }
+
+            const pathCoords = validHops.map(hop => [hop.lat, hop.lon]);
+            
+            const polyline = L.polyline(pathCoords, {
+                color: '#3388ff',
+                weight: 3,
+                opacity: 0.8,
+                dashArray: '5,5',
+                lineJoin: 'round'
+            }).addTo(map);
+
+            validHops.forEach(hop => {
+                const marker = L.marker([hop.lat, hop.lon], {
+                    icon: L.divIcon({
+                        className: 'traceroute-hop-marker',
+                        html: `<div class="hop-marker-inner">${hop.ttl}</div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    }),
+                    riseOnHover: true
+                }).addTo(map);
+
+                let popupContent = `<div class="hop-popup-content">
+                    <h6>Hop #${hop.ttl}</h6>
+                    <table class="table table-sm table-borderless">
+                        <tr><th>IP:</th><td><code>${hop.ip}</code></td></tr>`;
+                
+                if (hop.reverse_dns) {
+                    popupContent += `<tr><th>Reverse DNS:</th><td>${hop.reverse_dns}</td></tr>`;
+                }
+                
+                popupContent += `<tr><th>Location:</th><td>`;
+                
+                if (hop.city) popupContent += `${hop.city}, `;
+                popupContent += `${hop.country}</td></tr>
+                    <tr><th>Coordinates:</th><td>${hop.lat.toFixed(4)}, ${hop.lon.toFixed(4)}</td></tr>
+                    <tr><th>ISP:</th><td>${hop.isp}</td></tr>`;
+                
+                if (hop.as_number) {
+                    popupContent += `<tr><th>AS Number:</th><td>${hop.as_number}</td></tr>`;
+                }
+                
+                if (hop.as_name) {
+                    popupContent += `<tr><th>AS Name:</th><td>${hop.as_name}</td></tr>`;
+                }
+                
+                popupContent += `</table></div>`;
+                
+                marker.bindPopup(popupContent, {
+                    maxWidth: 300,
+                    minWidth: 200
+                });
+            });
+
+            if (validHops.length >= 2) {
+                L.marker([validHops[0].lat, validHops[0].lon], {
+                    icon: L.divIcon({
+                        className: 'traceroute-start-marker',
+                        html: '<i class="bi bi-play-fill"></i>',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32]
+                    })
+                }).addTo(map).bindPopup('<b>Başlangıç Noktası</b>');
+
+                L.marker([validHops[validHops.length-1].lat, validHops[validHops.length-1].lon], {
+                    icon: L.divIcon({
+                        className: 'traceroute-end-marker',
+                        html: '<i class="bi bi-flag-fill"></i>',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32]
+                    })
+                }).addTo(map).bindPopup('<b>Hedef Nokta</b>');
+            }
+
+            map.fitBounds(polyline.getBounds(), {
+                padding: [50, 50],
+                maxZoom: 15
+            });
+        });
+        {% endif %}
+
+        // ASN Map
+        {% if asn_map_data %}
+        const asnMapData = {{ asn_map_data | tojson | safe }};
+        if (asnMapData && asnMapData.length > 0) {
+            initMapOnce(document.getElementById('map-asn'), (map) => {
+                map.setView([20, 0], 2);
+                asnMapData.forEach(point => {
+                    const radius = 5 + Math.log(point.count + 1) * 3;
+                    L.circleMarker([point.lat, point.lon], { 
+                        radius: radius,
+                        color: '#1e3a8a', 
+                        fillColor: '#fbbf24', 
+                        fillOpacity: 0.7,
+                        weight: 2
+                    }).addTo(map).bindPopup(`
+                        <b>${point.country_name || point.loc}</b><br>
+                        <strong>Görülme Sayısı:</strong> ${point.count}
+                    `);
+                });
+            });
+        }
+        {% endif %}
+
+        // Add loading animation to form submission
+        const form = document.getElementById('analysis-form');
+        const domainInput = document.getElementById('domainInput');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const resultsContainer = document.getElementById('results-container');
+        const loadingMessage = document.getElementById('loading-message');
+        const errorMessage = document.getElementById('error-message');
+        const resultsTitle = document.getElementById('results-title');
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const domain = domainInput.value.trim();
+                if (!domain) {
+                    alert('Lütfen bir alan adı veya IP adresi girin.');
+                    return;
+                }
+                
+                // Sonuçları ve hata mesajlarını sıfırla
+                // Bu kısım, tüm sonuçları ve haritaları temizlemek için gereklidir
+                resultsContainer.innerHTML = '';
+                resultsTitle.style.display = 'none';
+                errorMessage.style.display = 'none';
+                loadingMessage.style.display = 'block';
+                
+                submitBtn.disabled = true;
+                loadingSpinner.style.display = 'inline-block';
+
+                // Sorgu isteği
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadingMessage.style.display = 'none';
+                    submitBtn.disabled = false;
+                    loadingSpinner.style.display = 'none';
+
+                    if (data.success) {
+                        resultsTitle.textContent = `Detaylı Analiz Raporları: ${data.domain_name}`;
+                        resultsTitle.style.display = 'block';
+                        resultsContainer.innerHTML = `
+                            <div class="container">
+                                <h3 class="section-title mb-4">
+                                    <i class="bi bi-gear-wide-connected me-2"></i>
+                                    Analiz Raporları: ${data.domain_name}
+                                </h3>
+                                <div class="accordion" id="detailsAccordion">
+                                    ${generateWhoisHtml(data.whois_data)}
+                                    ${generateDnsHtml(data.dns_records)}
+                                    ${generateWaybackHtml(data.wayback_snapshots)}
+                                    </div>
+                            </div>
+                        `;
+                    } else {
+                        errorMessage.textContent = data.error;
+                        errorMessage.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    loadingMessage.style.display = 'none';
+                    submitBtn.disabled = false;
+                    loadingSpinner.style.display = 'none';
+                    errorMessage.textContent = `Sorgu sırasında beklenmedik bir hata oluştu: ${error.message}`;
+                    errorMessage.style.display = 'block';
+                    console.error('Fetch error:', error);
+                });
+            });
+        }
+    });
+
+    function generateWhoisHtml(data) {
+        if (!data) return '';
+        const rows = Object.entries(data).map(([key, value]) => {
+            const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            let formattedValue = '';
+            if (Array.isArray(value)) {
+                formattedValue = value.join('<br>');
+            } else if (value === null) {
+                formattedValue = 'Veri bulunamadı.';
+            } else {
+                formattedValue = value;
+            }
+            return `
+                <tr>
+                    <th style="width: 20%;">${formattedKey}</th>
+                    <td>${formattedValue}</td>
+                </tr>
+            `;
+        }).join('');
+        return `
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWhois">
+                        <i class="bi bi-person-badge-fill me-2"></i>
+                        <strong>WHOIS Bilgileri</strong>
+                    </button>
+                </h2>
+                <div id="collapseWhois" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                    <div class="accordion-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function generateDnsHtml(data) {
+        if (!data) return '';
+        let html = '';
+        
+        const recordTypes = {
+            'A': 'A Kayıtları (IPv4)',
+            'CNAME': 'CNAME Kaydı',
+            'MX': 'MX Kayıtları (Mail Server)',
+            'NS': 'NS Kayıtları (Name Server)',
+            'TXT': 'TXT Kayıtları'
+        };
+
+        for (const [key, value] of Object.entries(recordTypes)) {
+            if (data[key] && data[key].length > 0) {
+                html += `<h6 class="text-primary mt-2">${value}</h6><ul class="list-group list-group-flush mb-3">`;
+                if (key === 'MX') {
+                    data[key].forEach(mx => {
+                        html += `<li class="list-group-item"><strong>${mx.preference}</strong> - ${mx.exchange}</li>`;
+                    });
+                } else if (key === 'CNAME') {
+                    html += `<li class="list-group-item">${data[key]}</li>`;
+                } else {
+                    data[key].forEach(record => {
+                        html += `<li class="list-group-item">${record}</li>`;
+                    });
+                }
+                html += `</ul>`;
+            }
+        }
+
+        if (!html) {
+            html = `<div class="alert alert-info text-center" role="alert"><i class="bi bi-info-circle-fill me-2"></i> DNS kaydı bulunamadı.</div>`;
+        }
+
+        return `
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDns">
+                        <i class="bi bi-list-nested me-2"></i>
+                        <strong>DNS Kayıtları</strong>
+                    </button>
+                </h2>
+                <div id="collapseDns" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                    <div class="accordion-body">
+                        ${html}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateWaybackHtml(data) {
+        if (!data || !data.success) {
+            return `
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWayback">
+                            <i class="bi bi-archive-fill me-2"></i>
+                            <strong>Wayback Machine Geçmiş Kayıtları</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseWayback" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                        <div class="accordion-body">
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="bi bi-info-circle-fill me-2"></i> Wayback Machine'de geçmiş kayıt bulunamadı.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const snapshot = data.closest_snapshot;
+        let content = '';
+        if (snapshot) {
+            content = `
+                <p class="text-muted mb-3">Wayback Machine'de bulunan en yakın arşivlenmiş kayıt:</p>
+                <div class="bg-light p-3 rounded shadow-sm">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Tarih:</dt>
+                        <dd class="col-sm-8">${snapshot.timestamp}</dd>
+                        <dt class="col-sm-4">Bağlantı:</dt>
+                        <dd class="col-sm-8 text-break"><a href="${snapshot.url}" target="_blank">${snapshot.url}</a></dd>
+                    </dl>
+                </div>
+            `;
+        } else {
+            content = `
+                <div class="alert alert-info text-center" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i> Wayback Machine'de geçmiş kayıt bulunamadı.
+                </div>
+            `;
+        }
+        return `
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWayback">
+                        <i class="bi bi-archive-fill me-2"></i>
+                        <strong>Wayback Machine Geçmiş Kayıtları</strong>
+                    </button>
+                </h2>
+                <div id="collapseWayback" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                    <div class="accordion-body">
+                        ${content}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    </script>
+</body>
+</html>
