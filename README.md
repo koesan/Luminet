@@ -104,26 +104,16 @@ sudo python3 main.py
 - **Networking**: dnspython, requests, python-whois
 - **Security**: pyOpenSSL, scapy
 
-### Frontend
-- **UI Framework**: Bootstrap 5.3.3
-- **Icons**: Bootstrap Icons 1.11.3
-- **Fonts**: Inter (Google Fonts)
-- **Styling**: Custom CSS with CSS Grid & Flexbox
-
-### Infrastructure
-- **Process Management**: Gunicorn WSGI server
-- **Health Monitoring**: Built-in health checks
-
 ---
 
 ## 🔍 Usage Examples
 
-### Web Interface
+### 1) Web Interface
 1. Open `http://localhost:7860` in your browser
 2. Enter an IP address or domain name
 3. Click "Analyze" to get comprehensive results
 
-### API Usage
+### 2) API Usage
 
 ```bash
 # Analyze an IP address
@@ -221,35 +211,39 @@ sudo python3 main.py
 - **Ağ İletişimi**: dnspython, requests, python-whois
 - **Güvenlik**: pyOpenSSL, scapy
 
-### Ön Uç
-- **UI Framework**: Bootstrap 5.3.3
-- **İkonlar**: Bootstrap Icons 1.11.3
-- **Yazı Tipleri**: Inter (Google Fonts)
-- **Stil**: CSS Grid ve Flexbox ile özel CSS
-
 ## 🔍 Kullanım Örnekleri
 
-### Web Arayüzü
+### 1) Web Arayüzü
 1. Tarayıcınızda `http://localhost:7860` adresini açın
 2. Bir IP adresi veya alan adı girin
 3. Kapsamlı sonuçlar için "Analiz Et" düğmesine tıklayın
 
-### API Kullanımı
+### 2) API Kullanımı
 
 ```bash
 # Bir IP adresini analiz etme
 curl -X POST http://localhost:7860/api/analyze \
   -H "Content-Type: application/json" \
   -d '{"ip": "8.8.8.8"}'
+
+# Örnek cevap
+{
+  "ip": "8.8.8.8",
+  "ipinfo": {
+    "city": "Mountain View",
+    "country": "US",
+    "org": "AS15169 Google LLC"
+  },
+  "ping": {
+    "min": "10.2 ms",
+    "avg": "12.5 ms",
+    "max": "15.1 ms"
+  }
+}
 ```
+
+---
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-  <p>Made with ❤️ by the Luminet community</p>
-  <p>🌟 Star this repo if you find it useful!</p>
-</div>
