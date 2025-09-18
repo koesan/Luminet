@@ -75,14 +75,10 @@ source .venv/bin/activate
 # 3) Install Python dependencies
 pip install -r requirements.txt
 
-# 4) Initialize database
-python3 -c "from main import db, app; \
-with app.app_context(): db.create_all(); print('DB created')"
-
-# 5) Run the app
+# 4) Run the app
 sudo python3 main.py
 
-# 6) Open in browser
+# 5) Open in browser
 # http://localhost:5000
 ```
 
@@ -199,14 +195,10 @@ source .venv/bin/activate
 # 3) Python bağımlılıklarını kur
 pip install -r requirements.txt
 
-# 4) Veritabanı oluştur
-python3 -c "from main import db, app; \
-with app.app_context(): db.create_all(); print('DB created')"
-
-# 5) Uygulamayı çalıştır
+# 4) Uygulamayı çalıştır
 sudo python3 main.py
 
-# 6) Tarayıcıda aç
+# 5) Tarayıcıda aç
 # http://localhost:5000
 ```
 
