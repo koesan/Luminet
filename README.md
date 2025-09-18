@@ -1,95 +1,53 @@
+<div align="center">
 
-# 🌐 Luminet — Lightweight Recon Dashboard / Luminet — Hafif Keşif Panosu
+# 🌐 Luminet - Open Source Network Analysis Tool
+  
+  <p>🌟 Star this repo if you find it useful!</p>
+
+[![Docker Hub](https://img.shields.io/badge/Docker-Hub-blue?logo=docker)](https://hub.docker.com)
+[![Hugging Face](https://img.shields.io/badge/🤗-Hugging%20Face-yellow)](https://huggingface.co/spaces)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 https://github.com/user-attachments/assets/afa9aaf8-586a-4f67-bb67-6a3d5d13e103
 
 [▶️ Luminet Demo Video](video/video.mp4)
 
----
+## 📎 Live Demo - Canlı Demo
 
-## 🇹🇷 Türkçe — Proje Özeti
-
-Luminet, bir **IP** veya **domain** girildiğinde yalnızca açık kaynaklı, ücretsiz ve herkese açık veri kaynaklarından (WHOIS / RDAP, DNS, BGP, DNSBL, HTTP/SSL vb.) toplanabilen bilgileri elde edip kullanıcıya şık bir **web arayüzü** üzerinden sunmayı amaçlayan bir projedir.  
-Amacı: Ağ keşfini **basit, hızlı, ücretsiz ve erişilebilir** hale getirmek.
+[![Hugging Face](https://img.shields.io/badge/🤗%20Hugging%20Face-Demo-yellow?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/spaces/koesan/Luminet)
 
 ---
 
-## 🇬🇧 English — Project Summary
+🇬🇧[English](#english) | 🇹🇷[Türkçe](#türkçe)
 
-Luminet is an **open-source web application** for IP and domain reconnaissance.  
-It aggregates information only from **public and free data sources** (WHOIS / RDAP, DNS, BGP, DNSBL, HTTP/SSL, etc.) and displays it via a lightweight **web UI**.  
-Goal: make network reconnaissance **simple, fast, free, and accessible**.
+</div>
+---
+
+## English
+
+### 🇬🇧
+
+## 📖 Overview
+
+**Luminet** is a comprehensive open-source network analysis tool designed for cybersecurity professionals, network administrators, and researchers. It provides detailed reconnaissance capabilities for IP addresses and domain names using only public, free data sources.
+
+### ✨ Key Features
+
+- **🔍 RDAP/WHOIS Analysis** - Comprehensive registry data lookup
+- **🌐 DNS Records Enumeration** - A, AAAA, MX, NS, TXT, CNAME, SOA records
+- **🗺️ Geographic Location Mapping** - IP geolocation and ISP information
+- **🛡️ Security Assessment** - DNSBL checks, anonymity service detection
+- **🔒 SSL/TLS Certificate Analysis** - Certificate chain and security validation
+- **📊 Network Routing Analysis** - Traceroute and BGP information
+- **⚡ Real-time Ping Statistics** - Latency and connectivity testing
+- **🔌 Port Scanning** - Open port detection and service identification
 
 ---
 
-## ✨ Özellikler — Features
+## 🚀 Installation & Run
 
-- **TR:** RDAP / WHOIS özetleri, ASN & BGP prefix ilişkileri  
-- **EN:** RDAP / WHOIS parsing & summaries, ASN & BGP prefix mapping  
 
-- **TR:** DNS sorguları (A/AAAA/MX/NS/TXT/CNAME/SOA), DNSSEC kontrolü  
-- **EN:** DNS queries (A/AAAA/MX/NS/TXT/CNAME/SOA), DNSSEC checks  
-
-- **TR:** DNSBL sorguları, Reverse-DNS, traceroute & mtr, ping özetleri  
-- **EN:** DNSBL lookups, reverse DNS, traceroute & mtr, ping summaries  
-
-- **TR:** Opsiyonel `nmap` port taraması  
-- **EN:** Optional port scanning with `nmap`  
-
-- **TR:** HTTP header analizi & SSL sertifika incelemesi  
-- **EN:** HTTP header grab & SSL certificate analysis  
-
-- **TR:** Kullanıcı yönetimi + API anahtarı desteği  
-- **EN:** User management + API key support  
-
----
-
-## 📂 Dosyalar — Files Included
-- `main.py` — Flask uygulaması (backend) / Flask backend  
-- `index.html`, `login.html`, `register.html`, `profile.html` — frontend HTML sayfaları / HTML frontend templates  
-- `requirements.txt` — bağımlılıklar / dependencies  
-- `README.md` — proje açıklaması / project description  
-- `video/` — medya dosyaları (ör. video.mp4) / media assets (e.g. demo.mp4)  
-
----
-
-## ⚙️ Gereksinimler — Requirements
-
-- **TR:** Linux (Ubuntu/Debian önerilir), Python 3.10+  
-- **EN:** Linux (Ubuntu/Debian recommended), Python 3.10+  
-
-**Opsiyonel paketler:** `mtr`, `nmap` (bazı özellikler için gerekli olabilir).  
-**Python bağımlılıkları:** `requirements.txt` dosyasında listelenmiştir.  
-
----
-
-## 🚀 Kurulum & Çalıştırma — Installation & Run
-
-### 🇹🇷 Türkçe
-```bash
-# 1) Sistem paketlerini kur
-sudo apt update
-sudo apt install -y python3 python3-venv python3-pip mtr nmap
-
-# 2) Sanal ortam oluştur
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 3) Python bağımlılıklarını kur
-pip install -r requirements.txt
-
-# 4) Veritabanı oluştur
-python3 -c "from main import db, app; \
-with app.app_context(): db.create_all(); print('DB created')"
-
-# 5) Uygulamayı çalıştır
-sudo python3 main.py
-
-# 6) Tarayıcıda aç
-# http://localhost:5000
-```
-
-### 🇬🇧 English
 ```bash
 # 1) Install system packages
 sudo apt update
@@ -113,31 +71,164 @@ sudo python3 main.py
 # http://localhost:5000
 ```
 
-**Not / Note:** Bazı network araçları (örn. `scapy`, `nmap`) root yetkisi ister. Bu nedenle `sudo` ile çalıştırmanız gerekebilir. Production ortamı için `gunicorn + systemd + nginx` tavsiye edilir.  
+**Note:** Some network tools (e.g., `scapy`, `nmap`) require root privileges. Therefore, you need to run them with `sudo`. For production environments, `gunicorn + systemd + nginx` is recommended.
 
 ---
 
-## 📡 API Örneği — API Example
+## 📋 System Requirements
 
-**Request:**
-```curl
-POST /api/analyze
-Host: localhost:5000
-Content-Type: application/json
-X-API-Key: <your_api_key>
+- **Python**: 3.11 or higher
+- `traceroute` - Network path tracing
+- `nmap` - Port scanning capabilities  
+- `mtr` - Enhanced network diagnostics
+- `dig`/`nslookup` - DNS utilities
 
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Framework**: Flask 2.3.3
+- **Language**: Python 3.11+
+- **Networking**: dnspython, requests, python-whois
+- **Security**: pyOpenSSL, scapy
+
+### Frontend
+- **UI Framework**: Bootstrap 5.3.3
+- **Icons**: Bootstrap Icons 1.11.3
+- **Fonts**: Inter (Google Fonts)
+- **Styling**: Custom CSS with CSS Grid & Flexbox
+
+### Infrastructure
+- **Process Management**: Gunicorn WSGI server
+- **Health Monitoring**: Built-in health checks
+
+---
+
+## 🔍 Usage Examples
+
+### Web Interface
+1. Open `http://localhost:7860` in your browser
+2. Enter an IP address or domain name
+3. Click "Analyze" to get comprehensive results
+
+### API Usage
+
+```bash
+# Analyze an IP address
+curl -X POST http://localhost:7860/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"ip": "8.8.8.8"}'
+
+# Example response
 {
-  "ip": "8.8.8.8"
+  "ip": "8.8.8.8",
+  "ipinfo": {
+    "city": "Mountain View",
+    "country": "US",
+    "org": "AS15169 Google LLC"
+  },
+  "ping": {
+    "min": "10.2 ms",
+    "avg": "12.5 ms",
+    "max": "15.1 ms"
+  }
 }
 ```
 
-**Response:** JSON contains fields like `ipinfo`, `whois`, `dns`, `traceroute`, `port_scan` depending on availability.  
+
+## Türkçe
+
+### 🇹🇷 
+
+## 📖 Genel Bakış
+
+**Luminet**, siber güvenlik uzmanları, ağ yöneticileri ve araştırmacılar için tasarlanmış kapsamlı bir açık kaynak ağ analiz aracıdır. Yalnızca halka açık, ücretsiz veri kaynaklarını kullanarak IP adresleri ve alan adları için detaylı keşif yetenekleri sağlar.
+
+### ✨ Temel Özellikler
+
+- **🔍 RDAP/WHOIS Analizi** - Kapsamlı kayıt veri arama
+- **🌐 DNS Kayıt Numaralandırması** - A, AAAA, MX, NS, TXT, CNAME, SOA kayıtları
+- **🗺️ Coğrafi Konum Haritalaması** - IP coğrafi konum ve ISS bilgileri
+- **🛡️ Güvenlik Değerlendirmesi** - DNSBL kontrolleri, anonimlik hizmeti tespiti
+- **🔒 SSL/TLS Sertifika Analizi** - Sertifika zinciri ve güvenlik doğrulaması
+- **📊 Ağ Yönlendirme Analizi** - Traceroute ve BGP bilgileri
+- **⚡ Gerçek Zamanlı Ping İstatistikleri** - Gecikme ve bağlanabilirlik testi
+- **🔌 Port Tarama** - Açık port tespiti ve servis tanımlama
+
+## 🚀 Kurulum & Çalıştırma 
+
+```bash
+# 1) Sistem paketlerini kur
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip mtr nmap
+
+# 2) Sanal ortam oluştur
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3) Python bağımlılıklarını kur
+pip install -r requirements.txt
+
+# 4) Veritabanı oluştur
+python3 -c "from main import db, app; \
+with app.app_context(): db.create_all(); print('DB created')"
+
+# 5) Uygulamayı çalıştır
+sudo python3 main.py
+
+# 6) Tarayıcıda aç
+# http://localhost:5000
+```
+
+**Not:** Bazı network araçları (örn. `scapy`, `nmap`) root yetkisi ister. Bu nedenle `sudo` ile çalıştırmanız gerekirr. Production ortamı için `gunicorn + systemd + nginx` tavsiye edilir.  
+
+
+## 📋 Sistem Gereksinimleri
+
+- **Python**: 3.11 veya üzeri
+- `traceroute` - Ağ yolu izleme
+- `nmap` - Port tarama yetenekleri
+- `mtr` - Gelişmiş ağ tanılama
+- `dig`/`nslookup` - DNS araçları
+
+## 🛠️ Teknoloji Yığını
+
+### Arka Uç
+- **Framework**: Flask 2.3.3
+- **Dil**: Python 3.11+
+- **Ağ İletişimi**: dnspython, requests, python-whois
+- **Güvenlik**: pyOpenSSL, scapy
+
+### Ön Uç
+- **UI Framework**: Bootstrap 5.3.3
+- **İkonlar**: Bootstrap Icons 1.11.3
+- **Yazı Tipleri**: Inter (Google Fonts)
+- **Stil**: CSS Grid ve Flexbox ile özel CSS
+
+## 🔍 Kullanım Örnekleri
+
+### Web Arayüzü
+1. Tarayıcınızda `http://localhost:7860` adresini açın
+2. Bir IP adresi veya alan adı girin
+3. Kapsamlı sonuçlar için "Analiz Et" düğmesine tıklayın
+
+### API Kullanımı
+
+```bash
+# Bir IP adresini analiz etme
+curl -X POST http://localhost:7860/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"ip": "8.8.8.8"}'
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## ✅ Son Söz — Final Note
-
-- **TR:** Luminet, ağ analizi / keşif için pratik ve açık kaynaklı bir araçtır. Kullanırken yasalara ve etik kurallara uyunuz.  
-- **EN:** Luminet is a practical open-source tool for network reconnaissance. Please use responsibly and comply with laws and ethical guidelines.  
-
----
+<div align="center">
+  <p>Made with ❤️ by the Luminet community</p>
+  <p>🌟 Star this repo if you find it useful!</p>
+</div>
