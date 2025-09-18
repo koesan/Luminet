@@ -48,8 +48,22 @@ https://github.com/user-attachments/assets/afa9aaf8-586a-4f67-bb67-6a3d5d13e103
 
 ```bash
 # 1) Install system packages
+
+# ------------------------------
+# Debian/Ubuntu
+# ------------------------------
 sudo apt update
 sudo apt install -y python3 python3-venv python3-pip mtr nmap
+
+# ------------------------------
+# Fedora
+# ------------------------------
+sudo dnf install -y python3 python3-venv python3-pip mtr nmap
+
+# ------------------------------
+# Arch Linux / Manjaro
+# ------------------------------
+sudo pacman -Syu --noconfirm python python-virtualenv python-pip mtr nmap
 
 # 2) Create virtual environment
 python3 -m venv .venv
@@ -158,8 +172,22 @@ curl -X POST http://localhost:7860/api/analyze \
 
 ```bash
 # 1) Sistem paketlerini kur
+
+# ------------------------------
+# Debian/Ubuntu
+# ------------------------------
 sudo apt update
 sudo apt install -y python3 python3-venv python3-pip mtr nmap
+
+# ------------------------------
+# Fedora
+# ------------------------------
+sudo dnf install -y python3 python3-venv python3-pip mtr nmap
+
+# ------------------------------
+# Arch Linux / Manjaro
+# ------------------------------
+sudo pacman -Syu --noconfirm python python-virtualenv python-pip mtr nmap
 
 # 2) Sanal ortam oluştur
 python3 -m venv .venv
