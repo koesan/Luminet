@@ -11,7 +11,7 @@
 
 https://github.com/user-attachments/assets/afa9aaf8-586a-4f67-bb67-6a3d5d13e103
 
-[▶️ Luminet Demo Video](video/video.mp4)
+[![Luminet Demo Video](https://img.shields.io/badge/Luminet%20Demo%20Video-▶️-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](video/video.mp4)
 
 ## 📎 Live Demo - Canlı Demo
 
